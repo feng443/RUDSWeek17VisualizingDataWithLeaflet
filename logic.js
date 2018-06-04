@@ -20,7 +20,6 @@ queryUrl = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.g
 var tectonicUrl = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_plates.json'
 
 const COLORS = [
-    'white',
     '#B5F050',
     '#DDF051',
     '#ECD650',
@@ -29,10 +28,10 @@ const COLORS = [
     '#E16364',
 ]
 
-var LABELS = ['<0', '0-1', '1-2', '2-3', '3-4', '4-5', '>5']
+var LABELS = ['0-1', '1-2', '2-3', '3-4', '4-5', '5+']
 
 function getColor(mag) {
-    var i = i > 5 ? 5 : i < 0 ? 0  : Math.ceil(mag)
+    var i = i > 5 ? 5 : Math.floor(mag)
     return COLORS[i]
 }
 
@@ -54,7 +53,7 @@ d3.queue()
         let coord= [c[1], c[0]]
         let mag = d.properties.mag
         let place = d.properties.place
-        mag = Math.abs(mag)
+        if (mag < 0 ) return;
         let color = getColor(mag)
         earthquakeMarkers.push(
             L.circle(coord, {
