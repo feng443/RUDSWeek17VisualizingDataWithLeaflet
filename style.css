@@ -20,3 +20,7 @@ ul {
     padding: 10px;
     margin: 0px;
 }
+
+.leaflet-control {
+    border-radius: 5px;
+}
