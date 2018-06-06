@@ -45,13 +45,7 @@ function getPopup(feature) {
     return `<h2><a href=${detail} target=_new>${title}</a></h2>`
 }
 
-// Use d3.queue() to handle multiple data sources
-d3.queue()
-.defer(d3.json, earthquakeUrl)
-.defer(d3.json, tectonicUrl)
-.await(function(error, earthquakeData, tectonicData) {
-
-    // Earthquark Markers Layer
+function getEarthquakeLayer(earthquakeData) {
     earthquakeLayer = L.geoJson(earthquakeData, {
         pointToLayer: function(feature, latlng) {
             return L.circleMarker(latlng, getCircleOptions(feature),
@@ -61,9 +55,10 @@ d3.queue()
     });
 
     // Parse time automatically for time dimension control
-    earthquakeLayer = L.timeDimension.layer.geoJson(earthquakeLayer, {duration: 'PT4H'})
+    return L.timeDimension.layer.geoJson(earthquakeLayer, {duration: 'PT4H'})
+}
 
-    // Add Legend
+function getLegend() {
     var legend = L.control({ position: 'bottomright' })
     legend.onAdd = function (map) {
         var div = L.DomUtil.create('div', 'info legend')
@@ -74,9 +69,11 @@ d3.queue()
         div.innerHTML += '<ul>' + labels.join('') + '</ul>'
         return div
     }
+    return legend
+}
 
-    // Fault Lines Layer
-    var tectonicLayer = L.geoJson(tectonicData, {
+function getTectonicLayer(tectonicData) {
+    return L.geoJson(tectonicData, {
         style: {
                 color: "orange",
                 colorOpacity: 0,
@@ -85,19 +82,45 @@ d3.queue()
                 weight: 1
         }
     })
+}
+
+function getVocanoLayer(vocanoData) {
+    var heatArray = []
+    vocanoData.features.forEach( function(feature) {
+        if (feature.properties.H_active == 1) {
+            coord = feature.geometry.coordinates
+            if (coord) heatArray.push(coord.reverse())
+        }
+    })
+    return L.heatLayer(heatArray, {
+        max: 0.5,
+        radius: 20,
+        blur: 1,
+    })
+}
+
+// Use d3.queue() to handle multiple data sources
+d3.queue()
+.defer(d3.json, earthquakeUrl)
+.defer(d3.json, tectonicUrl)
+.defer(d3.json, vocalnoURL)
+.await(function(error, earthquakeData, tectonicData, vocanoData) {
+
+    tectonicLayer = getTectonicLayer(tectonicData)
+    earthquakeLayer = getEarthquakeLayer(earthquakeData)
+    vocanoLayer = getVocanoLayer(vocanoData)
 
     var overlayMap = {
-        //'Fault Lines': tectonicLayer,
-        'Earthquarks': earthquakeLayer,
-
         'Fault Lines': tectonicLayer,
+        'Active Volcanoes': vocanoLayer,
+        'Earthquarks': earthquakeLayer,
     }
 
     // Create a new map
     var myMap = L.map("map", {
         center: [ 37.09, -10 ], // Adjust center to show most of world map in a typical screen
         zoom: 3,
-        layers: [satelliteMap, tectonicLayer, earthquakeLayer],
+        layers: [outdoorsMap, tectonicLayer, vocanoLayer, earthquakeLayer],
         timeDimension: true,
         timeDimensionControl: true,
         timeDimensionOptions: {
@@ -111,7 +134,6 @@ d3.queue()
                 loop: true,
         }
     },
-
     })
 
     // Create a layer control containing our baseMaps
@@ -120,5 +142,5 @@ d3.queue()
         collapsed: false
     }).addTo(myMap)
 
-    legend.addTo(myMap)
+    getLegend().addTo(myMap)
 })

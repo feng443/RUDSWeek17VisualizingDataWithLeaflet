@@ -9,7 +9,7 @@ http://github.chanfeng.com/RUDSWeek17VisualizingDataWithLeaflet/
 
 Screen Shot:
 
-![screenshot](RUDSWeek17VisualizingDataWithLeaflet.gif)
+![screenshot](img/RUDSWeek17VisualizingDataWithLeaflet.gif)
 
 
 ## Copyright
