@@ -7,6 +7,7 @@
 // Store our API endpoint as earthquakeUrl
 const earthquakeUrl = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson'
 const tectonicUrl = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_plates.json'
+const vocalnoURL = 'https://data.humdata.org/dataset/a60ac839-920d-435a-bf7d-25855602699d/resource/7234d067-2d74-449a-9c61-22ae6d98d928/download/volcano.json'
 
 const COLORS = [ '#B5F050', '#DDF051', '#ECD650', '#E9B24E', '#E59F66', '#E16364', ]
 const LABELS = ['0-1', '1-2', '2-3', '3-4', '4-5', '5+']
@@ -29,10 +30,11 @@ function getCircleOptions(feature) {
     var i = i > 5 ? 5 : Math.floor(mag)
     return {
         radius: Math.sqrt(mag) * 10,
-        color: COLORS[i],
-        weight: 2,
+        color: 'grey',
         fillColor: COLORS[i],
-        opacity: 0
+        opacity: 1,
+        fillOpacity: 0.8,
+        weight: 2,
     }
 }
 
@@ -52,8 +54,9 @@ d3.queue()
     // Earthquark Markers Layer
     earthquakeLayer = L.geoJson(earthquakeData, {
         pointToLayer: function(feature, latlng) {
-            return L.circleMarker(latlng, getCircleOptions(feature))
-                    .bindPopup(getPopup(feature))
+            return L.circleMarker(latlng, getCircleOptions(feature),
+                {renderer: L.SVG, className: 'shadow'}
+            ).bindPopup(getPopup(feature))
         }
     });
 
@@ -76,14 +79,18 @@ d3.queue()
     var tectonicLayer = L.geoJson(tectonicData, {
         style: {
                 color: "orange",
-                colorOpacity: 0.5,
-                weight: 1.5
+                colorOpacity: 0,
+                fillColor: 'white',
+                fillOpacity: 0,
+                weight: 1
         }
     })
 
     var overlayMap = {
-        'Fault Lines': tectonicLayer,
+        //'Fault Lines': tectonicLayer,
         'Earthquarks': earthquakeLayer,
+
+        'Fault Lines': tectonicLayer,
     }
 
     // Create a new map
@@ -100,7 +107,7 @@ d3.queue()
             autoPlay: true,
             playerOptions: {
                 buffer: 10,
-                transitionTime: 200,
+                transitionTime: 400,
                 loop: true,
         }
     },

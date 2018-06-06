@@ -24,3 +24,7 @@ ul {
 .leaflet-control {
     border-radius: 5px;
 }
+
+.shadow {
+  filter: drop-shadow( 5px 2px 5px #000 );
+}
